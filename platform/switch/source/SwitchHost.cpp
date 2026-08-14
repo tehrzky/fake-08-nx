@@ -1,11 +1,14 @@
-#include <switch.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <dirent.h>
-#include <errno.h>
 
-#include <fstream>
-#include <iostream>
+#include <switch.h>
+#include <unistd.h>
 using namespace std;
 
 #include "../../SDL2Common/source/sdl2basehost.h"
@@ -18,7 +21,7 @@ using namespace std;
 
 // sdl
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_image.h>
 
 #define WINDOW_SIZE_X 1280
 #define WINDOW_SIZE_Y 720
@@ -27,7 +30,6 @@ using namespace std;
 
 #define RENDERER_FLAGS SDL_RENDERER_ACCELERATED
 #define PIXEL_FORMAT SDL_PIXELFORMAT_ARGB8888
-
 
 string _desktopSdl2SettingsDir = "switch/fake08";
 string _desktopSdl2SettingsPrefix = "switch/fake08/";
@@ -43,43 +45,43 @@ int touchLocationY;
 uint8_t mouseBtnState;
 
 uint8_t ConvertInputToP8(u64 input){
-	uint8_t result = 0;
-	if (input & HidNpadButton_Left){
-		result |= P8_KEY_LEFT;
-	}
+    uint8_t result = 0;
+    if (input & HidNpadButton_Left){
+        result |= P8_KEY_LEFT;
+    }
 
-	if (input & HidNpadButton_Right){
-		result |= P8_KEY_RIGHT;
-	}
+    if (input & HidNpadButton_Right){
+        result |= P8_KEY_RIGHT;
+    }
 
-	if (input & HidNpadButton_Up){
-		result |= P8_KEY_UP;
-	}
+    if (input & HidNpadButton_Up){
+        result |= P8_KEY_UP;
+    }
 
-	if (input & HidNpadButton_Down){
-		result |= P8_KEY_DOWN;
-	}
+    if (input & HidNpadButton_Down){
+        result |= P8_KEY_DOWN;
+    }
 
-	if (input & HidNpadButton_B){
-		result |= P8_KEY_O;
-	}
+    if (input & HidNpadButton_B){
+        result |= P8_KEY_O;
+    }
 
-	if (input & HidNpadButton_A){
-		result |= P8_KEY_X;
-	}
+    if (input & HidNpadButton_A){
+        result |= P8_KEY_X;
+    }
 
-	if (input & HidNpadButton_Plus){
-		result |= P8_KEY_PAUSE;
-	}
+    if (input & HidNpadButton_Plus){
+        result |= P8_KEY_PAUSE;
+    }
 
-	if (input & HidNpadButton_Minus){
-		result |= P8_KEY_7;
-	}
+    if (input & HidNpadButton_Minus){
+        result |= P8_KEY_7;
+    }
 
-	return result;
+    return result;
 }
 
-Host::Host(int windowWidth, int windowHeight)  
+Host::Host(int windowWidth, int windowHeight)
 {
     struct stat st = {0};
 
@@ -101,7 +103,6 @@ Host::Host(int windowWidth, int windowHeight)
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
 
     // Initialize the default gamepad (which reads handheld mode inputs as well as the first connected controller)
-    
     padInitializeDefault(&pad);
 
     setPlatformParams(
@@ -116,17 +117,24 @@ Host::Host(int windowWidth, int windowHeight)
     );
 }
 
-
 InputState_t Host::scanInput(){
-    //SDL input doesn't seem to work correctly on the switch, so I've left the switch specific one
-    //the issue may be related to having multiple controllers?
     padUpdate(&pad);
-
     currKDown_64 = padGetButtonsDown(&pad);
     currKHeld_64 = padGetButtons(&pad);
 
+    // --- Left analog stick as D-Pad ---
+    HidAnalogStickState analog_l = padGetStickPos(&pad, 0);
+    #define ANALOG_DEADZONE 15000
+    
+    uint8_t analogP8 = 0;
+    if (analog_l.x < -ANALOG_DEADZONE) analogP8 |= P8_KEY_LEFT;
+    if (analog_l.x >  ANALOG_DEADZONE) analogP8 |= P8_KEY_RIGHT;
+    if (analog_l.y < -ANALOG_DEADZONE) analogP8 |= P8_KEY_UP;
+    if (analog_l.y >  ANALOG_DEADZONE) analogP8 |= P8_KEY_DOWN;
+    // ------------------------------------
+
     lDown = currKHeld_64 & HidNpadButton_L;
-	rDown = currKDown_64 & HidNpadButton_R;
+    rDown = currKDown_64 & HidNpadButton_R;
 
     if (lDown && rDown){
         quit = 1;
@@ -147,14 +155,13 @@ InputState_t Host::scanInput(){
     }
 
     return InputState_t {
-        ConvertInputToP8(currKDown_64),
-        ConvertInputToP8(currKHeld_64),
+        ConvertInputToP8(currKDown_64) | analogP8,
+        ConvertInputToP8(currKHeld_64) | analogP8,
         (int16_t)touchLocationX,
         (int16_t)touchLocationY,
         mouseBtnState
     };
 }
-
 
 vector<string> Host::listcarts(){
     vector<string> carts;
@@ -172,12 +179,11 @@ vector<string> Host::listcarts(){
         closedir (dir);
     }
 
-    
     return carts;
 }
 
-std::vector<std::string> Host::listdirs() {
-    std::vector<std::string> dirs;
+std::vector<string> Host::listdirs() {
+    std::vector<string> dirs;
 
     DIR *dir;
     struct dirent *ent;
@@ -195,7 +201,6 @@ std::vector<std::string> Host::listdirs() {
         }
         closedir (dir);
     }
-    
+
     return dirs;
 }
-

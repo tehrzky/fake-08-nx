@@ -129,8 +129,8 @@ InputState_t Host::scanInput(){
     uint8_t analogP8 = 0;
     if (analog_l.x < -ANALOG_DEADZONE) analogP8 |= P8_KEY_LEFT;
     if (analog_l.x >  ANALOG_DEADZONE) analogP8 |= P8_KEY_RIGHT;
-    if (analog_l.y < -ANALOG_DEADZONE) analogP8 |= P8_KEY_UP;
-    if (analog_l.y >  ANALOG_DEADZONE) analogP8 |= P8_KEY_DOWN;
+    if (analog_l.y < -ANALOG_DEADZONE) analogP8 |= P8_KEY_DOWN;
+    if (analog_l.y >  ANALOG_DEADZONE) analogP8 |= P8_KEY_UP;
     // ------------------------------------
 
     lDown = currKHeld_64 & HidNpadButton_L;

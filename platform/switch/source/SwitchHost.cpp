@@ -133,9 +133,9 @@ InputState_t Host::scanInput(){
     if (analog_l.y >  ANALOG_DEADZONE) analogHeld |= P8_KEY_UP;
 
     // Track previous analog state so kDown only fires ONCE per direction change
-    static uint8_t prevAnalog = 0;
-    uint8_t analogDown = analogHeld & ~prevAnalog;
-    prevAnalog = analogHeld;
+    static uint8_t prevAnalogP8 = 0;
+    uint8_t analogP8_justPressed = analogP8 & ~prevAnalogP8;
+    prevAnalogP8 = analogP8;
     // ------------------------------------
 
     lDown = currKHeld_64 & HidNpadButton_L;
@@ -160,8 +160,8 @@ InputState_t Host::scanInput(){
     }
 
     return InputState_t {
-        ConvertInputToP8(currKDown_64) | analogDown,
-        ConvertInputToP8(currKHeld_64) | analogHeld,
+        ConvertInputToP8(currKDown_64) | analogP8_justPressed,
+        ConvertInputToP8(currKHeld_64) | analogP8,
         (int16_t)touchLocationX,
         (int16_t)touchLocationY,
         mouseBtnState

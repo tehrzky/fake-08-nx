@@ -124,21 +124,20 @@ InputState_t Host::scanInput(){
 
     // --- Left analog stick as D-Pad ---
     HidAnalogStickState analog_l = padGetStickPos(&pad, 0);
-    #define ANALOG_DEADZONE 15000
+    #define ANALOG_DEADZONE 18000
     
-    uint8_t analogP8 = 0;
-    if (analog_l.x < -ANALOG_DEADZONE) analogP8 |= P8_KEY_LEFT;
-    if (analog_l.x >  ANALOG_DEADZONE) analogP8 |= P8_KEY_RIGHT;
-    if (analog_l.y < -ANALOG_DEADZONE) analogP8 |= P8_KEY_DOWN;
-    if (analog_l.y >  ANALOG_DEADZONE) analogP8 |= P8_KEY_UP;
-    // ------------------------------------
+    uint8_t analogHeld = 0;
+    if (analog_l.x < -ANALOG_DEADZONE) analogHeld |= P8_KEY_LEFT;
+    if (analog_l.x >  ANALOG_DEADZONE) analogHeld |= P8_KEY_RIGHT;
+    if (analog_l.y < -ANALOG_DEADZONE) analogHeld |= P8_KEY_DOWN;
+    if (analog_l.y >  ANALOG_DEADZONE) analogHeld |= P8_KEY_UP;
 
     // Track previous analog state so kDown only fires ONCE per direction change
     static uint8_t prevAnalog = 0;
-    uint8_t analogDown = analogHeld & ~prevAnalog;  // only directions that JUST started
+    uint8_t analogDown = analogHeld & ~prevAnalog;
     prevAnalog = analogHeld;
     // ------------------------------------
-    
+
     lDown = currKHeld_64 & HidNpadButton_L;
     rDown = currKDown_64 & HidNpadButton_R;
 

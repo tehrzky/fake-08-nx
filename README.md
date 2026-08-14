@@ -1,4 +1,4 @@
-# fake-08
+# fake-08 nx
 
 A Pico 8 player for homebrew consoles. Not related to or supported by Lexaloffle Software. [Latest release](https://github.com/jtothebell/fake-08/releases) includes releases for Nintendo 3DS, Nintendo Switch, Sony PS Vita, Nintendo Wii U, the Miyoo CFW for bittboy and similar consoles, and the Miyoo Mini. If you are feeling extra brave, you can also download build aftifacts from the latest CI runs in the [Actions section](https://github.com/jtothebell/fake-08/actions)
 

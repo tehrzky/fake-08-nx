@@ -131,8 +131,10 @@ InputState_t Host::scanInput(){
     if (analog_l.x >  ANALOG_DEADZONE) analogHeld |= P8_KEY_RIGHT;
     if (analog_l.y < -ANALOG_DEADZONE) analogHeld |= P8_KEY_DOWN;
     if (analog_l.y >  ANALOG_DEADZONE) analogHeld |= P8_KEY_UP;
-
-    // Track previous analog state so kDown only fires ONCE per direction change
+ 
+    uint8_t analogP8 = analogHeld;  // Track current analog state for edge detection
+ 
+     // Track previous analog state so kDown only fires ONCE per direction change
     static uint8_t prevAnalogP8 = 0;
     uint8_t analogP8_justPressed = analogP8 & ~prevAnalogP8;
     prevAnalogP8 = analogP8;

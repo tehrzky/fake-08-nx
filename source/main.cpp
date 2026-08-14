@@ -10,7 +10,9 @@
 #include "logger.h"
 #include "host.h"
 #include "hostVmShared.h"
-
+#ifdef __SWITCH__
+#include <switch.h>
+#endif
 #if __VITA__
 
 #include <vitasdk.h>
@@ -64,6 +66,7 @@ int main(int argc, char* argv[])
 	vm->SetCartList(host->listcarts());
 
 	bool loadCart = false;
+	bool launchedFromLibrary = false;
 	char* cart;
 
 	#if __VITA__
@@ -78,6 +81,7 @@ int main(int argc, char* argv[])
 	for (index = optind; index < argc; index++) {
 		cart = argv[index];
 		loadCart = true;
+		launchedFromLibrary = true;
 	}
 	#endif
 
@@ -100,7 +104,11 @@ int main(int argc, char* argv[])
 
 	Logger_Write("Turning off vm and exiting logger\n");
 	vm->CloseCart();
-
+	#ifdef __SWITCH__
+	if (launchedFromLibrary) {
+	    envSetNextLoad("sdmc:/switch/pico8-launcher/pico8-launcher.nro", "");
+	}
+	#endif
 	Logger_Write("calling one time cleanup\n");
 	host->oneTimeCleanup();
 
